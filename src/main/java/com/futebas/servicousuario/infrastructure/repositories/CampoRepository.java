@@ -8,4 +8,7 @@ import com.futebas.servicousuario.infrastructure.entities.Campo;
 @Repository
 public interface CampoRepository extends MongoRepository<Campo, String> {
 
+	Campo findByCnpj(String cnpj);
+	
+	Campo findByEmail(String email);
 }
