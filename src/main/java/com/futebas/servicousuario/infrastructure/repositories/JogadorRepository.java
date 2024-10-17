@@ -8,4 +8,7 @@ import com.futebas.servicousuario.infrastructure.entities.Jogador;
 @Repository
 public interface JogadorRepository extends MongoRepository<Jogador, String> {
 
+	Jogador findByCpf(String cpf);
+	
+	Jogador findByEmail(String email);
 }

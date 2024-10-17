@@ -1,8 +1,7 @@
 package com.futebas.servicousuario.infrastructure.entities;
 
-import java.time.LocalTime;
+import java.util.List;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -15,13 +14,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Campo{
+public class Empresario extends Usuario{
 
-	@Id
-	private String id;
-	private Double metroQuadrado, valorPorHora;
-	private LocalTime horaAbrir, horaFechar;
-	private Boolean campoCoberto;
-	private Endereco endereco;
-	
+	private List<Campo> campos;
+	private String cnpj;
 }
