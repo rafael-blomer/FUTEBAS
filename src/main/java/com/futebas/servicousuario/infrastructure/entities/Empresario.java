@@ -16,7 +16,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Empresario extends Usuario{
 
-	private List<Endereco> enderecos;
 	private List<Campo> campos;
 	private String cnpj;
 }

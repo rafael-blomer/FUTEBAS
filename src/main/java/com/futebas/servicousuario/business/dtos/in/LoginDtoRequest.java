@@ -1,5 +1,16 @@
 package com.futebas.servicousuario.business.dtos.in;
 
-public record LoginDtoRequest (String email, String senha){
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class LoginDtoRequest {
+	String email, senha;
 }

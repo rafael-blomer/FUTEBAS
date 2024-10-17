@@ -22,5 +22,6 @@ public class Campo{
 	private Double metroQuadrado, valorPorHora;
 	private LocalTime horaAbrir, horaFechar;
 	private Boolean campoCoberto;
+	private Endereco endereco;
 	
 }

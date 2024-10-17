@@ -33,6 +33,7 @@ public class JogadorService {
 
 	private void updateData(Jogador antigo, Jogador novo) {
 		antigo.setNome(novo.getNome());
+		antigo.setCpf(novo.getCpf());
 		antigo.setQualidade(novo.getQualidade());
 		antigo.setJogaDeGoleiro(novo.getJogaDeGoleiro());
 	}
