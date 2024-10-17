@@ -1,14 +1,20 @@
 package com.futebas.servicousuario.business;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.futebas.servicousuario.business.dtos.in.LoginDtoRequest;
 import com.futebas.servicousuario.business.exceptions.DataIntegratyException;
 import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
 import com.futebas.servicousuario.infrastructure.repositories.EmpresarioRepository;
 import com.futebas.servicousuario.infrastructure.repositories.JogadorRepository;
+import com.futebas.servicousuario.infrastructure.security.JwtUtil;
 
 @Service
 public class UsuarioService {
@@ -19,6 +25,10 @@ public class UsuarioService {
 	private EmpresarioRepository empresarioRepo;
 	@Autowired
 	private PasswordEncoder encoder;
+	@Autowired
+	private JwtUtil jwtUtil;
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
 	public Empresario cadastroEmpresario(Empresario empresario) {
 		if(findEmpresaByCnpj(empresario.getCnpj()) != null)
@@ -36,6 +46,15 @@ public class UsuarioService {
 			throw new DataIntegratyException("Email já cadastrado.");
 		jogador.setSenha(encoder.encode(jogador.getSenha()));
 		return jogadorRepo.save(jogador);
+	}
+	
+	public String login(LoginDtoRequest dto) {
+		Authentication authentication = authenticationManager.authenticate(
+	            new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
+	        );
+	        SecurityContextHolder.getContext().setAuthentication(authentication);
+	        String jwtToken = jwtUtil.generateToken(authentication.getName());
+	        return "Bearer " + jwtToken;
 	}
 	
 	private Jogador findJogadorByCpf(String cpf) {

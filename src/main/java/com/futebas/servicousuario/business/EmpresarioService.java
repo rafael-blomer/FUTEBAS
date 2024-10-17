@@ -14,7 +14,7 @@ import com.futebas.servicousuario.infrastructure.security.JwtUtil;
 
 @Service
 public class EmpresarioService {
-	
+
 	@Autowired
 	private EmpresarioRepository repo;
 	@Autowired
@@ -27,14 +27,14 @@ public class EmpresarioService {
 			throw new ObjectNotFoundException("Empresario não encotrado.");
 		return obj;
 	}
-	
+
 	@Transactional
-	public void deleteEmpresario(String token){
+	public void deleteEmpresario(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
 		Empresario obj = getByEmail(email);
 		repo.delete(obj);
 	}
-	
+
 	@Transactional
 	public Empresario updateEmpresario(String token, Empresario novo) {
 		String email = jwt.extrairEmailToken(token.substring(7));
@@ -47,21 +47,21 @@ public class EmpresarioService {
 		antigo.setNome(novo.getNome());
 		antigo.setEmail(novo.getEmail());
 	}
-	
+
 	public Campo adicionarCampo(String token, Campo campo) {
 		String email = jwt.extrairEmailToken(token.substring(7));
 		Empresario obj = getByEmail(email);
 		obj.getCampos().add(campo);
 		return campo;
 	}
-	
+
 	@Transactional
 	public void deleteCampo(String token, Campo campo) {
 		String email = jwt.extrairEmailToken(token.substring(7));
 		Empresario obj = getByEmail(email);
 		obj.getCampos().remove(campo);
 	}
-	
+
 	public List<Campo> buscarTodosCamposEmp(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
 		Empresario obj = getByEmail(email);

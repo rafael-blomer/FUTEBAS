@@ -2,9 +2,6 @@ package com.futebas.servicousuario.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +11,6 @@ import com.futebas.servicousuario.business.UsuarioService;
 import com.futebas.servicousuario.business.dtos.in.LoginDtoRequest;
 import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
-import com.futebas.servicousuario.infrastructure.security.JwtUtil;
 
 @RestController
 @RequestMapping("/usuario")
@@ -22,19 +18,11 @@ public class UsuarioController {
 
 	@Autowired
 	private UsuarioService usuarioService;
-	@Autowired
-	private JwtUtil jwtUtil;
-	@Autowired
-	private AuthenticationManager authenticationManager;
 
 	@PostMapping("/login")
-	public String login(@RequestBody Empresario dto) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getEmail(),
-                        dto.getSenha())
-        );
-        return "Bearer " + jwtUtil.generateToken(authentication.getName());
-    }
+	public ResponseEntity<String> login(@RequestBody LoginDtoRequest dto) {
+		return ResponseEntity.ok(usuarioService.login(dto));
+	}
 
 	@PostMapping("/jogador")
 	public ResponseEntity<Jogador> cadastroJogador(@RequestBody Jogador jogador) {

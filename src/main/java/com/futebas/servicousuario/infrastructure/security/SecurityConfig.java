@@ -18,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-
 public class SecurityConfig {
 
     // Instâncias de JwtUtil e UserDetailsService injetadas pelo Spring
