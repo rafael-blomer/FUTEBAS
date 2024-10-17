@@ -9,5 +9,8 @@ import com.futebas.servicousuario.infrastructure.entities.Usuario;
 
 @Repository
 public interface UsuarioRepository extends MongoRepository<Usuario, String> {
-    Optional<Usuario> findByEmail(String email);
+	
+	Optional<Usuario> findOptByEmail(String email);
+	
+	Usuario findByEmail(String email);
 }
