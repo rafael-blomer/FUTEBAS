@@ -11,4 +11,6 @@ import com.futebas.servicousuario.infrastructure.entities.Campo;
 public interface CampoRepository extends MongoRepository<Campo, String> {
 
 	List<Campo> findByEnderecoBairro(String bairro);
+	
+	List<Campo> findByEnderecoCidade(String cidade);
 }

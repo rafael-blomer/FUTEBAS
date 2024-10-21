@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
 import com.futebas.servicousuario.infrastructure.entities.Campo;
@@ -31,33 +30,29 @@ public class JogadorService {
 		return obj;
 	}
 	
-	@Transactional
 	public void deleteJogador(String token){
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Jogador obj = getByEmail(email);
+		Jogador obj = getByEmail(token);
 		repo.delete(obj);
 	}
 	
-	@Transactional
 	public Jogador updateJogador(String token, Jogador novo) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Jogador antigo = getByEmail(email);
+		Jogador antigo = getByEmail(token);
 		updateData(antigo, novo);
 		return repo.save(antigo);
 	}
 
 	private void updateData(Jogador antigo, Jogador novo) {
 		antigo.setNome(novo.getNome());
-		antigo.setCpf(novo.getCpf());
 		antigo.setQualidade(novo.getQualidade());
 		antigo.setJogaDeGoleiro(novo.getJogaDeGoleiro());
 	}
 	
-	public List<Campo> listarCampos() {
-		return campoRepo.findAll();
-	}
-	
 	public List<Campo> listarCamposBairro(String bairro) {
 		return campoRepo.findByEnderecoBairro(bairro);
+	}
+	
+	
+	public List<Campo> listarCamposCidade(String cidade) {
+		return campoRepo.findByEnderecoCidade(cidade);
 	}
 }

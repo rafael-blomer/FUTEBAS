@@ -41,8 +41,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/auth").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
-                        .requestMatchers("/usuario/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuario/jogador").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuario/empresa").permitAll()
+                        .requestMatchers("/usuario/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
