@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futebas.servicousuario.business.JogadorService;
-import com.futebas.servicousuario.infrastructure.entities.Campo;
+import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
+import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
 
 @RestController
@@ -26,8 +27,8 @@ public class JogadorController {
 	
 	
 	@GetMapping
-	public ResponseEntity<Jogador> getByEmail(@RequestHeader("Authorization") String token) {
-		return ResponseEntity.ok().body(jogadorService.getByEmail(token));
+	public ResponseEntity<JogadorDtoResponse> getByEmail(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(jogadorService.getJogadorDtoByEmail(token));
 	}
 	
 	@DeleteMapping
@@ -37,17 +38,17 @@ public class JogadorController {
 	}
 	
 	@PutMapping
-	public ResponseEntity<Jogador> updateJogador(@RequestHeader("Authorization") String token, @RequestBody Jogador jogador) {
+	public ResponseEntity<JogadorDtoResponse> updateJogador(@RequestHeader("Authorization") String token, @RequestBody Jogador jogador) {
 		return ResponseEntity.ok().body(jogadorService.updateJogador(token, jogador));
 	}
 	
 	@GetMapping("/cidade")
-	public ResponseEntity<List<Campo>> listaCaposCidade(@RequestParam String cidade) {
+	public ResponseEntity<List<CampoDtoResponse>> listaCamposCidade(@RequestParam String cidade) {
 		return ResponseEntity.ok().body(jogadorService.listarCamposCidade(cidade));
 	}
 	
 	@GetMapping("/bairro")
-	public ResponseEntity<List<Campo>> listaCaposBairro(@RequestParam String bairro) {
+	public ResponseEntity<List<CampoDtoResponse>> listaCamposBairro(@RequestParam String bairro) {
 		return ResponseEntity.ok().body(jogadorService.listarCamposBairro(bairro));
 	}
 }

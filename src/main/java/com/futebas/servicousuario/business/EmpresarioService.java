@@ -1,11 +1,15 @@
 package com.futebas.servicousuario.business;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.futebas.servicousuario.business.converter.EmpresaConverter;
+import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
+import com.futebas.servicousuario.business.dtos.out.EmpresarioDtoResponse;
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
 import com.futebas.servicousuario.infrastructure.entities.Campo;
 import com.futebas.servicousuario.infrastructure.entities.Empresario;
@@ -19,52 +23,57 @@ public class EmpresarioService {
 	private EmpresarioRepository repo;
 	@Autowired
 	private JwtUtil jwt;
+	@Autowired
+	private EmpresaConverter converter;
 
-	public Empresario getByEmail(String token) {
+	private Empresario getByEmail(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
 		Empresario obj = repo.findByEmail(email);
 		if (obj == null)
 			throw new ObjectNotFoundException("Empresario não encotrado.");
 		return obj;
 	}
+	
+	public EmpresarioDtoResponse getEmpresarioDtoByEmail(String token) {
+		Empresario obj = getByEmail(token);
+		return converter.paraEmpresarioDto(obj);
+	}
 
 	@Transactional
 	public void deleteEmpresario(String token) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Empresario obj = getByEmail(email);
+		Empresario obj = getByEmail(token);
 		repo.delete(obj);
 	}
 
 	@Transactional
-	public Empresario updateEmpresario(String token, Empresario novo) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Empresario antigo = getByEmail(email);
+	public EmpresarioDtoResponse updateEmpresario(String token, Empresario novo) {
+		Empresario antigo = getByEmail(token);
 		updateData(antigo, novo);
-		return repo.save(antigo);
+		return converter.paraEmpresarioDto(repo.save(antigo));
 	}
 
 	private void updateData(Empresario antigo, Empresario novo) {
-		antigo.setNome(novo.getNome());
-		antigo.setEmail(novo.getEmail());
+		antigo.setNome(novo.getNome() != null ? novo.getNome() : antigo.getNome());
 	}
 
-	public Campo adicionarCampo(String token, Campo campo) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Empresario obj = getByEmail(email);
+	public CampoDtoResponse adicionarCampo(String token, Campo campo) {
+		Empresario obj = getByEmail(token);
 		obj.getCampos().add(campo);
-		return campo;
+		return converter.paraCampoDto(campo);
 	}
 
 	@Transactional
-	public void deleteCampo(String token, Campo campo) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Empresario obj = getByEmail(email);
+	public void removerCampo(String token, Campo campo) {
+		Empresario obj = getByEmail(token);
 		obj.getCampos().remove(campo);
 	}
 
-	public List<Campo> buscarTodosCamposEmp(String token) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Empresario obj = getByEmail(email);
-		return obj.getCampos();
+	public List<CampoDtoResponse> buscarTodosCamposEmp(String token) {
+		Empresario obj = getByEmail(token);
+		List<Campo> list = obj.getCampos(); 
+		List<CampoDtoResponse> listDto = new ArrayList<CampoDtoResponse>();
+		for (Campo i : list) 
+			listDto.add(converter.paraCampoDto(i));
+		return listDto;
 	}
 }
