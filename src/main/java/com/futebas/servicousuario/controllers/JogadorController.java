@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futebas.servicousuario.business.JogadorService;
+import com.futebas.servicousuario.business.dtos.in.JogadorUpdateDtoRequest;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
-import com.futebas.servicousuario.infrastructure.entities.Jogador;
 
 @RestController
 @RequestMapping("/jogador")
@@ -38,7 +38,7 @@ public class JogadorController {
 	}
 	
 	@PutMapping
-	public ResponseEntity<JogadorDtoResponse> updateJogador(@RequestHeader("Authorization") String token, @RequestBody Jogador jogador) {
+	public ResponseEntity<JogadorDtoResponse> updateJogador(@RequestHeader("Authorization") String token, @RequestBody JogadorUpdateDtoRequest jogador) {
 		return ResponseEntity.ok().body(jogadorService.updateJogador(token, jogador));
 	}
 	
@@ -48,7 +48,7 @@ public class JogadorController {
 	}
 	
 	@GetMapping("/bairro")
-	public ResponseEntity<List<CampoDtoResponse>> listaCamposBairro(@RequestParam String bairro) {
-		return ResponseEntity.ok().body(jogadorService.listarCamposBairro(bairro));
+	public ResponseEntity<List<CampoDtoResponse>> listaCamposBairro(@RequestParam String bairro, @RequestParam String cidade) {
+		return ResponseEntity.ok().body(jogadorService.listarCamposBairro(bairro, cidade));
 	}
 }

@@ -15,6 +15,7 @@ import lombok.Setter;
 @Builder
 public class CampoDtoResponse {
 
+	private String nomeEmpresa;
 	private Double metroQuadrado, valorPorHora;
 	private LocalTime horaAbrir, horaFechar;
 	private Boolean campoCoberto;

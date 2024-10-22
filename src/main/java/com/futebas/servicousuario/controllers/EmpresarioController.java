@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futebas.servicousuario.business.EmpresarioService;
+import com.futebas.servicousuario.business.dtos.in.EmpresarioUpdateDtoRequest;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.EmpresarioDtoResponse;
 import com.futebas.servicousuario.infrastructure.entities.Campo;
-import com.futebas.servicousuario.infrastructure.entities.Empresario;
 
 @RestController
 @RequestMapping("/empresario")
@@ -38,7 +38,7 @@ public class EmpresarioController {
 	}
 	
 	@PutMapping
-	public ResponseEntity<EmpresarioDtoResponse> updateEmpresario(@RequestHeader("Authorization") String token, @RequestBody Empresario empresario) {
+	public ResponseEntity<EmpresarioDtoResponse> updateEmpresario(@RequestHeader("Authorization") String token, @RequestBody EmpresarioUpdateDtoRequest empresario) {
 		return ResponseEntity.ok().body(service.updateEmpresario(token, empresario));
 	}
 	

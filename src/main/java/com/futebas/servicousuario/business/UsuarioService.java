@@ -49,12 +49,26 @@ public class UsuarioService {
 	}
 	
 	public String login(LoginDtoRequest dto) {
-		Authentication authentication = authenticationManager.authenticate(
+	    Authentication authentication = authenticationManager.authenticate(
 	            new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
-	        );
-	        SecurityContextHolder.getContext().setAuthentication(authentication);
-	        String jwtToken = jwtUtil.generateToken(authentication.getName());
-	        return "Bearer " + jwtToken;
+	    );
+	    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+	    String role;
+	    Jogador jogador = findJogadorByEmail(dto.getEmail());
+	    if (jogador != null) {
+	        role = "JOGADOR";
+	    } else {
+	        Empresario empresario = findEmpresaByEmail(dto.getEmail());
+	        if (empresario != null) {
+	            role = "EMPRESARIO";
+	        } else {
+	            throw new DataIntegratyException("Usuário não encontrado.");
+	        }
+	    }
+
+	    String jwtToken = jwtUtil.generateToken(authentication.getName(), role);
+	    return "Bearer " + jwtToken;
 	}
 	
 	private Jogador findJogadorByCpf(String cpf) {

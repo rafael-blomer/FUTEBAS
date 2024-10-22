@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.futebas.servicousuario.business.converter.EmpresaConverter;
 import com.futebas.servicousuario.business.converter.JogadorConverter;
+import com.futebas.servicousuario.business.dtos.in.JogadorUpdateDtoRequest;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
@@ -49,36 +50,36 @@ public class JogadorService {
 		repo.delete(obj);
 	}
 	
-	public JogadorDtoResponse updateJogador(String token, Jogador novo) {
+	public JogadorDtoResponse updateJogador(String token, JogadorUpdateDtoRequest novo) {
 		Jogador antigo = getByEmail(token);
 		updateData(antigo, novo);
 		return converter.paraJogadorDto(repo.save(antigo));
 	}
 
-	private void updateData(Jogador antigo, Jogador novo) {
+	private void updateData(Jogador antigo, JogadorUpdateDtoRequest novo) {
 		antigo.setNome(novo.getNome() != null ? novo.getNome() : antigo.getNome());
 		antigo.setQualidade(novo.getQualidade() != null ? novo.getQualidade() : antigo.getQualidade());
 		antigo.setJogaDeGoleiro(novo.getJogaDeGoleiro() != null ? novo.getJogaDeGoleiro() : antigo.getJogaDeGoleiro());
 	}
 	
-	public List<CampoDtoResponse> listarCamposBairro(String bairro) {
-	    List<Empresario> empresarios = empRepo.findEmpresariosByBairro(bairro);
-
+	public List<CampoDtoResponse> listarCamposBairro(String bairro, String cidade) {
+	    List<Empresario> empresarios = empRepo.findEmpresariosByCidade(cidade);
 	    return empresarios.stream()
-	    		
-	            .flatMap(empresario -> empresario.getCampos().stream()) 
-	            .filter(campo -> campo.getEndereco().getBairro().equalsIgnoreCase(bairro))
-	            .map(empConverter::paraCampoDto) 
+	            .flatMap(empresario -> empresario.getCampos().stream()
+	                .filter(campo -> campo.getEndereco().getBairro().equalsIgnoreCase(bairro))
+	                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade))
+	                .map(campo -> empConverter.paraCampoDto(campo, empresario.getNome()))) 
 	            .collect(Collectors.toList());
 	}
 
+
 	public List<CampoDtoResponse> listarCamposCidade(String cidade) {
 	    List<Empresario> empresarios = empRepo.findEmpresariosByCidade(cidade);
-	    
 	    return empresarios.stream()
-                .flatMap(empresario -> empresario.getCampos().stream()) 
-                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade)) 
-                .map(empConverter::paraCampoDto) 
-                .collect(Collectors.toList());
+	            .flatMap(empresario -> empresario.getCampos().stream()
+	                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade))
+	                .map(campo -> empConverter.paraCampoDto(campo, empresario.getNome()))) 
+	            .collect(Collectors.toList());
 	}
+
 }

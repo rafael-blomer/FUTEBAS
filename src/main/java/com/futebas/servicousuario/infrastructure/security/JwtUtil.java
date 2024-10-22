@@ -22,13 +22,14 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
     // Gera um token JWT com o nome de usuário e validade de 1 hora
-    public String generateToken(String username) {
-        return Jwts.builder() // Inicia o processo de construção do token JWT
-                .subject(username) // Define o nome de usuário como o "subject" do token
-                .issuedAt(new Date()) // Define a data e hora atuais como o momento de emissão do token
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // Define a data e hora de expiração do token para 1 hora a partir da emissão
-                .signWith(getSigningKey()) // Assina o token usando a chave de assinatura fornecida pelo método getSigningKey()
-                .compact(); // Conclui a construção do token e retorna o token compactado como uma String
+    public String generateToken(String username, String role) {
+        return Jwts.builder()
+                .claim("role", role)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .signWith(getSigningKey())
+                .compact();
     }
 
     // Extrai as claims do token JWT (informações adicionais do token)
@@ -59,5 +60,9 @@ public class JwtUtil {
         final String extractedUsername = extrairEmailToken(token);
         // Verifica se o nome de usuário do token corresponde ao fornecido e se o token não está expirado
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+    
+    public String extractRole(String token) {
+        return extractClaims(token).get("role", String.class);
     }
 }
