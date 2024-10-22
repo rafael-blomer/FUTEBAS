@@ -58,7 +58,10 @@ public class EmpresarioService {
 
 	public CampoDtoResponse adicionarCampo(String token, Campo campo) {
 		Empresario obj = getByEmail(token);
+		campo.getEndereco().setBairro(campo.getEndereco().getBairro().toLowerCase());
+		campo.getEndereco().setCidade(campo.getEndereco().getCidade().toLowerCase());
 		obj.getCampos().add(campo);
+		repo.save(obj);
 		return converter.paraCampoDto(campo);
 	}
 
@@ -66,9 +69,10 @@ public class EmpresarioService {
 	public void removerCampo(String token, Campo campo) {
 		Empresario obj = getByEmail(token);
 		obj.getCampos().remove(campo);
+		repo.save(obj);
 	}
 
-	public List<CampoDtoResponse> buscarTodosCamposEmp(String token) {
+	public List<CampoDtoResponse> getTodosCamposEmp(String token) {
 		Empresario obj = getByEmail(token);
 		List<Campo> list = obj.getCampos(); 
 		List<CampoDtoResponse> listDto = new ArrayList<CampoDtoResponse>();

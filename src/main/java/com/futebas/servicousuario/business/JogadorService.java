@@ -1,7 +1,7 @@
 package com.futebas.servicousuario.business;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,9 +11,9 @@ import com.futebas.servicousuario.business.converter.JogadorConverter;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
-import com.futebas.servicousuario.infrastructure.entities.Campo;
+import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
-import com.futebas.servicousuario.infrastructure.repositories.CampoRepository;
+import com.futebas.servicousuario.infrastructure.repositories.EmpresarioRepository;
 import com.futebas.servicousuario.infrastructure.repositories.JogadorRepository;
 import com.futebas.servicousuario.infrastructure.security.JwtUtil;
 
@@ -23,13 +23,13 @@ public class JogadorService {
 	@Autowired
 	private JogadorRepository repo;
 	@Autowired
-	private CampoRepository campoRepo;
+	private EmpresarioRepository empRepo;
 	@Autowired
 	private JwtUtil jwt;
 	@Autowired
 	private JogadorConverter converter;
 	@Autowired
-	private EmpresaConverter converterEmp;
+	private EmpresaConverter empConverter;
 	
 	private Jogador getByEmail(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
@@ -62,19 +62,23 @@ public class JogadorService {
 	}
 	
 	public List<CampoDtoResponse> listarCamposBairro(String bairro) {
-		List<Campo> list = campoRepo.findByEnderecoBairro(bairro);
-		List<CampoDtoResponse> listDto = new ArrayList<CampoDtoResponse>();
-		for (Campo i : list) 
-			listDto.add(converterEmp.paraCampoDto(i));
-		return listDto;
+	    List<Empresario> empresarios = empRepo.findEmpresariosByBairro(bairro);
+
+	    return empresarios.stream()
+	    		
+	            .flatMap(empresario -> empresario.getCampos().stream()) 
+	            .filter(campo -> campo.getEndereco().getBairro().equalsIgnoreCase(bairro))
+	            .map(empConverter::paraCampoDto) 
+	            .collect(Collectors.toList());
 	}
-	
-	
+
 	public List<CampoDtoResponse> listarCamposCidade(String cidade) {
-		List<Campo> list = campoRepo.findByEnderecoCidade(cidade);
-		List<CampoDtoResponse> listDto = new ArrayList<CampoDtoResponse>();
-		for (Campo i : list) 
-			listDto.add(converterEmp.paraCampoDto(i));
-		return listDto;
+	    List<Empresario> empresarios = empRepo.findEmpresariosByCidade(cidade);
+	    
+	    return empresarios.stream()
+                .flatMap(empresario -> empresario.getCampos().stream()) 
+                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade)) 
+                .map(empConverter::paraCampoDto) 
+                .collect(Collectors.toList());
 	}
 }
