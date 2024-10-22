@@ -1,28 +1,23 @@
-package com.futebas.servicousuario.infrastructure.entities;
+package com.futebas.servicousuario.business.dtos.out;
 
-import java.io.Serializable;
 import java.time.LocalDate;
-
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.futebas.servicousuario.infrastructure.enums.QualidadeEnum;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Jogador extends Usuario implements Serializable {
-	private static final long serialVersionUID = 1L;
-	
-	private String cpf;
+@Builder
+public class JogadorDtoResponse {
+	private String nome, email;
 	private Boolean jogaDeGoleiro;
 	private QualidadeEnum qualidade;
 	private LocalDate dataNascimento;
-	
 }

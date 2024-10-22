@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.futebas.servicousuario.business.dtos.in.LoginDtoRequest;
@@ -22,15 +24,18 @@ public class UsuarioService {
 	@Autowired
 	private EmpresarioRepository empresarioRepo;
 	@Autowired
+	private PasswordEncoder encoder;
+	@Autowired
 	private JwtUtil jwtUtil;
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
 	public Empresario cadastroEmpresario(Empresario empresario) {
-		if(findCampoByCnpj(empresario.getCnpj()) != null)
+		if(findEmpresaByCnpj(empresario.getCnpj()) != null)
 			throw new DataIntegratyException("CNPJ já cadastrado.");
-		if(findCampoByEmail(empresario.getEmail()) != null)
+		if(findEmpresaByEmail(empresario.getEmail()) != null)
 			throw new DataIntegratyException("Email já cadastrado.");
+		empresario.setSenha(encoder.encode(empresario.getSenha()));
 		return empresarioRepo.save(empresario);
 	}
 	
@@ -39,26 +44,28 @@ public class UsuarioService {
 			throw new DataIntegratyException("CPF já cadastrado.");
 		if(findJogadorByEmail(jogador.getEmail()) != null)
 			throw new DataIntegratyException("Email já cadastrado.");
+		jogador.setSenha(encoder.encode(jogador.getSenha()));
 		return jogadorRepo.save(jogador);
 	}
 	
-	public String login(LoginDtoRequest dto) { 
+	public String login(LoginDtoRequest dto) {
 		Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getEmail(),
-                        dto.getSenha())
-        );
-        return "Bearer " + jwtUtil.generateToken(authentication.getName());
+	            new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
+	        );
+	        SecurityContextHolder.getContext().setAuthentication(authentication);
+	        String jwtToken = jwtUtil.generateToken(authentication.getName());
+	        return "Bearer " + jwtToken;
 	}
 	
 	private Jogador findJogadorByCpf(String cpf) {
 		return jogadorRepo.findByCpf(cpf);
 	}
 	
-	private Empresario findCampoByCnpj(String cnpj) {
+	private Empresario findEmpresaByCnpj(String cnpj) {
 		return empresarioRepo.findByCnpj(cnpj);
 	}
 	
-	private Empresario findCampoByEmail(String email) {
+	private Empresario findEmpresaByEmail(String email) {
 		return empresarioRepo.findByEmail(email);
 	}
 	

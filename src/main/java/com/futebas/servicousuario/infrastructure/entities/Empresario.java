@@ -1,5 +1,6 @@
 package com.futebas.servicousuario.infrastructure.entities;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,8 +15,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Empresario extends Usuario{
-
+public class Empresario extends Usuario implements Serializable{
+	private static final long serialVersionUID = 1L;
+	
 	private List<Campo> campos;
 	private String cnpj;
 }

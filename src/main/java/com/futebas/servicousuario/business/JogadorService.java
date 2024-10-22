@@ -1,15 +1,19 @@
 package com.futebas.servicousuario.business;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.futebas.servicousuario.business.converter.EmpresaConverter;
+import com.futebas.servicousuario.business.converter.JogadorConverter;
+import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
+import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
-import com.futebas.servicousuario.infrastructure.entities.Campo;
+import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
-import com.futebas.servicousuario.infrastructure.repositories.CampoRepository;
+import com.futebas.servicousuario.infrastructure.repositories.EmpresarioRepository;
 import com.futebas.servicousuario.infrastructure.repositories.JogadorRepository;
 import com.futebas.servicousuario.infrastructure.security.JwtUtil;
 
@@ -19,11 +23,15 @@ public class JogadorService {
 	@Autowired
 	private JogadorRepository repo;
 	@Autowired
-	private CampoRepository campoRepo;
+	private EmpresarioRepository empRepo;
 	@Autowired
 	private JwtUtil jwt;
+	@Autowired
+	private JogadorConverter converter;
+	@Autowired
+	private EmpresaConverter empConverter;
 	
-	public Jogador getByEmail(String token) {
+	private Jogador getByEmail(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
 		Jogador obj = repo.findByEmail(email);
 		if (obj == null)
@@ -31,33 +39,46 @@ public class JogadorService {
 		return obj;
 	}
 	
-	@Transactional
+	public JogadorDtoResponse getJogadorDtoByEmail(String token) {
+		Jogador obj = getByEmail(token);
+		return converter.paraJogadorDto(obj);
+	}
+	
 	public void deleteJogador(String token){
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Jogador obj = getByEmail(email);
+		Jogador obj = getByEmail(token);
 		repo.delete(obj);
 	}
 	
-	@Transactional
-	public Jogador updateJogador(String token, Jogador novo) {
-		String email = jwt.extrairEmailToken(token.substring(7));
-		Jogador antigo = getByEmail(email);
+	public JogadorDtoResponse updateJogador(String token, Jogador novo) {
+		Jogador antigo = getByEmail(token);
 		updateData(antigo, novo);
-		return repo.save(antigo);
+		return converter.paraJogadorDto(repo.save(antigo));
 	}
 
 	private void updateData(Jogador antigo, Jogador novo) {
-		antigo.setNome(novo.getNome());
-		antigo.setCpf(novo.getCpf());
-		antigo.setQualidade(novo.getQualidade());
-		antigo.setJogaDeGoleiro(novo.getJogaDeGoleiro());
+		antigo.setNome(novo.getNome() != null ? novo.getNome() : antigo.getNome());
+		antigo.setQualidade(novo.getQualidade() != null ? novo.getQualidade() : antigo.getQualidade());
+		antigo.setJogaDeGoleiro(novo.getJogaDeGoleiro() != null ? novo.getJogaDeGoleiro() : antigo.getJogaDeGoleiro());
 	}
 	
-	public List<Campo> listarCampos() {
-		return campoRepo.findAll();
+	public List<CampoDtoResponse> listarCamposBairro(String bairro) {
+	    List<Empresario> empresarios = empRepo.findEmpresariosByBairro(bairro);
+
+	    return empresarios.stream()
+	    		
+	            .flatMap(empresario -> empresario.getCampos().stream()) 
+	            .filter(campo -> campo.getEndereco().getBairro().equalsIgnoreCase(bairro))
+	            .map(empConverter::paraCampoDto) 
+	            .collect(Collectors.toList());
 	}
-	
-	public List<Campo> listarCamposBairro(String bairro) {
-		return campoRepo.findByEnderecoBairro(bairro);
+
+	public List<CampoDtoResponse> listarCamposCidade(String cidade) {
+	    List<Empresario> empresarios = empRepo.findEmpresariosByCidade(cidade);
+	    
+	    return empresarios.stream()
+                .flatMap(empresario -> empresario.getCampos().stream()) 
+                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade)) 
+                .map(empConverter::paraCampoDto) 
+                .collect(Collectors.toList());
 	}
 }
