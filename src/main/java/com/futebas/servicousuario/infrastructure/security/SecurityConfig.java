@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
 	// Instâncias de JwtUtil e UserDetailsService injetadas pelo Spring
@@ -34,20 +36,19 @@ public class SecurityConfig {
 	// Configuração do filtro de segurança
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		JwtRequestFilter jwtRequestFilter = new JwtRequestFilter(jwtUtil, userDetailsService);
+	    JwtRequestFilter jwtRequestFilter = new JwtRequestFilter(jwtUtil, userDetailsService);
 
-		http.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.GET, "/auth").permitAll()
-						.requestMatchers(HttpMethod.POST, "/usuario/login").permitAll()
-						.requestMatchers(HttpMethod.POST, "/usuario/jogador").permitAll()
-						.requestMatchers(HttpMethod.POST, "/usuario/empresa").permitAll().requestMatchers("/usuario/**")
-						.authenticated().requestMatchers("/campo/**").hasRole("EMPRESARIO") 
-						.requestMatchers("/partida/**").hasRole("JOGADOR") 
-						.anyRequest().authenticated())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+	    http.csrf(AbstractHttpConfigurer::disable)
+	            .authorizeHttpRequests(authorize -> authorize
+	                    .requestMatchers(HttpMethod.GET, "/auth").permitAll()
+	                    .requestMatchers(HttpMethod.POST, "/usuario/login").permitAll()
+	                    .requestMatchers(HttpMethod.POST, "/usuario/jogador").permitAll()
+	                    .requestMatchers(HttpMethod.POST, "/usuario/empresa").permitAll()
+	                    .anyRequest().authenticated())
+	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
-		return http.build();
+	    return http.build();
 	}
 
 	// Configura o PasswordEncoder para criptografar senhas usando BCrypt

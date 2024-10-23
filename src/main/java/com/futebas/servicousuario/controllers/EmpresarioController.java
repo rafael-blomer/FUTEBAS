@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,33 +27,39 @@ public class EmpresarioController {
 	@Autowired
 	private EmpresarioService service;
 
+	@PreAuthorize("hasRole('EMPRESARIO')")
 	@GetMapping
 	public ResponseEntity<EmpresarioDtoResponse> getByEmail(@RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.getEmpresarioDtoByEmail(token));
 	}
 	
+	@PreAuthorize("hasRole('EMPRESARIO')")
 	@DeleteMapping
 	public ResponseEntity<Void> deleteEmpresarioByEmail(@RequestHeader("Authorization") String token) {
 		service.deleteEmpresario(token);
 		return ResponseEntity.noContent().build();
 	}
 	
+	@PreAuthorize("hasRole('EMPRESARIO')")
 	@PutMapping
 	public ResponseEntity<EmpresarioDtoResponse> updateEmpresario(@RequestHeader("Authorization") String token, @RequestBody EmpresarioUpdateDtoRequest empresario) {
 		return ResponseEntity.ok().body(service.updateEmpresario(token, empresario));
 	}
 	
+	@PreAuthorize("hasRole('EMPRESARIO')")
 	@PostMapping("/campos")
 	public ResponseEntity<CampoDtoResponse> adicionarCampoParaEmp(@RequestHeader("Authorization") String token, @RequestBody Campo campo) {
 		return ResponseEntity.ok().body(service.adicionarCampo(token, campo));
 	}
 	
+	@PreAuthorize("hasRole('EMPRESARIO')")
 	@DeleteMapping("/campos")
 	public ResponseEntity<Void> deleteCampoEmp(@RequestHeader("Authorization") String token, @RequestBody Campo campo) {
 		service.removerCampo(token, campo);
 		return ResponseEntity.noContent().build();
 	}
 	
+	@PreAuthorize("hasRole('EMPRESARIO')")
 	@GetMapping("/campos")
 	public ResponseEntity<List<CampoDtoResponse>> getCamposByEmpresario(@RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.getTodosCamposEmp(token));
