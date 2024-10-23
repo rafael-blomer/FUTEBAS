@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.futebas.servicousuario.business.converter.EmpresaConverter;
+import com.futebas.servicousuario.business.dtos.in.EmpresarioUpdateDtoRequest;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.EmpresarioDtoResponse;
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
@@ -46,23 +47,21 @@ public class EmpresarioService {
 	}
 
 	@Transactional
-	public EmpresarioDtoResponse updateEmpresario(String token, Empresario novo) {
+	public EmpresarioDtoResponse updateEmpresario(String token, EmpresarioUpdateDtoRequest novo) {
 		Empresario antigo = getByEmail(token);
 		updateData(antigo, novo);
 		return converter.paraEmpresarioDto(repo.save(antigo));
 	}
 
-	private void updateData(Empresario antigo, Empresario novo) {
+	private void updateData(Empresario antigo, EmpresarioUpdateDtoRequest novo) {
 		antigo.setNome(novo.getNome() != null ? novo.getNome() : antigo.getNome());
 	}
 
 	public CampoDtoResponse adicionarCampo(String token, Campo campo) {
 		Empresario obj = getByEmail(token);
-		campo.getEndereco().setBairro(campo.getEndereco().getBairro().toLowerCase());
-		campo.getEndereco().setCidade(campo.getEndereco().getCidade().toLowerCase());
 		obj.getCampos().add(campo);
 		repo.save(obj);
-		return converter.paraCampoDto(campo);
+		return converter.paraCampoDto(campo, obj.getNome());
 	}
 
 	@Transactional
@@ -77,7 +76,7 @@ public class EmpresarioService {
 		List<Campo> list = obj.getCampos(); 
 		List<CampoDtoResponse> listDto = new ArrayList<CampoDtoResponse>();
 		for (Campo i : list) 
-			listDto.add(converter.paraCampoDto(i));
+			listDto.add(converter.paraCampoDto(i, obj.getNome()));
 		return listDto;
 	}
 }

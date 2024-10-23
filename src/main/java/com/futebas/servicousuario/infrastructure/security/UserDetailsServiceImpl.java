@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.futebas.servicousuario.infrastructure.entities.Jogador;
 import com.futebas.servicousuario.infrastructure.entities.Usuario;
 import com.futebas.servicousuario.infrastructure.repositories.EmpresarioRepository;
 import com.futebas.servicousuario.infrastructure.repositories.JogadorRepository;
@@ -26,17 +27,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     // Implementação do método para carregar detalhes do usuário pelo e-mail
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Busca o usuário no banco de dados pelo e-mail
-    	Usuario usuario = repoEmp.findOptByEmail(email)
-    	        .map(emp -> (Usuario) emp) // Faz o cast para Usuario
-    	        .orElseGet(() -> repoJog.findOptByEmail(email)
-    	        .map(jog -> (Usuario) jog) // Faz o cast para Usuario
-    	        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email)));
+        Usuario usuario = repoEmp.findOptByEmail(email)
+                .map(emp -> (Usuario) emp)
+                .orElseGet(() -> repoJog.findOptByEmail(email)
+                .map(jog -> (Usuario) jog)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email)));
+
+        // Defina a role com base no tipo de usuário
+        String role = (usuario instanceof Jogador) ? "ROLE_JOGADOR" : "ROLE_EMPRESARIO";
 
         // Cria e retorna um objeto UserDetails com base no usuário encontrado
         return org.springframework.security.core.userdetails.User
-                .withUsername(usuario.getEmail()) // Define o nome de usuário como o e-mail
-                .password(usuario.getSenha()) // Define a senha do usuário
-                .build(); // Constrói o objeto UserDetails
+                .withUsername(usuario.getEmail())
+                .password(usuario.getSenha())
+                .authorities(role) // Adiciona a role às autoridades
+                .build();
     }
 }
