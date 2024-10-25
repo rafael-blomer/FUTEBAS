@@ -9,9 +9,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.futebas.servicousuario.business.exceptions.MaxPlayersReachedException;
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
+import com.futebas.servicousuario.business.exceptions.PlayerInGameException;
 import com.futebas.servicousuario.business.exceptions.TimeNotAllowedException;
-import com.futebas.servicousuario.business.exceptions.withoutPermissionException;
+import com.futebas.servicousuario.business.exceptions.WithoutPermissionException;
 import com.futebas.servicousuario.infrastructure.entities.Campo;
 import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
@@ -55,14 +57,14 @@ public class JogoService {
 	}
 
 	// jogador e emp
-	public void CancelarJogo(String idJogo, String token) {
+	public void cancelarJogo(String idJogo, String token) {
 		verificarPermissao(token, idJogo);
 		buscarDadosJogo(idJogo);
 		repo.delete(buscarDadosJogo(idJogo));
 	}
 
 	// jogador
-	public Jogo abrirInscicaoJogo(String idJogo, String token) {
+	public Jogo abrirInscricaoJogo(String idJogo, String token) {
 		verificarPermissao(token, idJogo);
 		Jogo jogo = buscarDadosJogo(idJogo);
 		jogo.setAbertoParaJogadores(true);
@@ -70,7 +72,7 @@ public class JogoService {
 	}
 
 	// jogador/automatico
-	public Jogo fecharInscicaoJogo(String idJogo, String token) {
+	public Jogo fecharInscricaoJogo(String idJogo, String token) {
 		verificarPermissao(token, idJogo);
 		Jogo jogo = buscarDadosJogo(idJogo);
 		jogo.setAbertoParaJogadores(false);
@@ -89,10 +91,9 @@ public class JogoService {
 	}
 
 	// jogador
-	public List<Jogo> jogosAbertosDia(LocalDateTime dataHora) {
-		LocalDate dia = dataHora.toLocalDate();
-		LocalDateTime inicioDoDia = dia.atStartOfDay();
-		LocalDateTime fimDoDia = dia.atTime(LocalTime.MAX);
+	public List<Jogo> jogosAbertosDia(LocalDate data) {
+		LocalDateTime inicioDoDia = data.atStartOfDay();
+		LocalDateTime fimDoDia = data.atTime(LocalTime.MAX);
 		return repo.findByDataHoraBetween(inicioDoDia, fimDoDia);
 	}
 
@@ -112,18 +113,25 @@ public class JogoService {
 	}
 
 	// jogador
-	public Jogo adicionarJogador(Jogador jogador, String idJogo, String token) {
+	public Jogo adicionarJogador(String cpfJogador, String idJogo, String token) {
 		verificarPermissao(token, idJogo);
 		Jogo jogo = buscarDadosJogo(idJogo);
-		jogo.getJogadores().add(jogador);
+		if (jogo.getJogadores().size() < jogo.getNumeroMaximoJogadores())
+			jogo.getJogadores().add(jogadorRepo.findByCpf(cpfJogador));
+		else
+			throw new MaxPlayersReachedException("O número máximo de jogadores para este jogo foi atingido.");
+		for (Jogador i : jogo.getJogadores()) {
+			if (i.getCpf().equals(cpfJogador))
+				throw new PlayerInGameException("O jogador já esta nesse jogo");
+		}
 		return repo.save(jogo);
 	}
 
 	// jogador
-	public Jogo removerJogador(Jogador jogador, String idJogo, String token) {
+	public Jogo removerJogador(String cpfJogador, String idJogo, String token) {
 		verificarPermissao(token, idJogo);
 		Jogo jogo = buscarDadosJogo(idJogo);
-		jogo.getJogadores().remove(jogador);
+		jogo.getJogadores().remove(jogadorRepo.findByCpf(cpfJogador));
 		return repo.save(jogo);
 	}
 
@@ -132,9 +140,9 @@ public class JogoService {
 			throw new TimeNotAllowedException("O jogo só pode ser marcado depois do estabelecimento abrir.");
 		if (jogo.getCampo().getHoraFechar().isBefore(jogo.getDataHora().toLocalTime()))
 			throw new TimeNotAllowedException("O jogo só pode ser marcado antes do estabelecimento fechar.");
-		List<Jogo> listJogosDia = jogosAbertosDia(jogo.getDataHora());
+		List<Jogo> listJogosDia = jogosAbertosDia(jogo.getDataHora().toLocalDate());
 		for (Jogo i : listJogosDia) {
-			if (jogo.getDataHora() == i.getDataHora())
+			if (jogo.getDataHora().equals( i.getDataHora()))
 				throw new TimeNotAllowedException("Já existe um jogo marcado nesse horário.");
 		}
 	}
@@ -146,7 +154,7 @@ public class JogoService {
 		Jogo jogo = buscarDadosJogo(idJogo);
 		if (!"EMPRESARIO".equals(role)) { 
 			if (jogador == null || !jogo.getCriador().getId().equals(jogador.getId())) 
-				throw new withoutPermissionException("Você não tem permissão para fazer isso.");
+				throw new WithoutPermissionException("Você não tem permissão para fazer isso.");
 		}
 	}
 	

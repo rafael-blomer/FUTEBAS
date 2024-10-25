@@ -1,9 +1,9 @@
 package com.futebas.servicousuario.business.exceptions;
 
-public class withoutPermissionException extends RuntimeException {
+public class WithoutPermissionException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 	
-	public withoutPermissionException(String msg) {
+	public WithoutPermissionException(String msg) {
 		super(msg);
 	}
 
