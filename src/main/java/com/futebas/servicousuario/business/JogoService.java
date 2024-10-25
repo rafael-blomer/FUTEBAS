@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.futebas.servicousuario.business.exceptions.ObjectNotFoundException;
 import com.futebas.servicousuario.business.exceptions.TimeNotAllowedException;
+import com.futebas.servicousuario.business.exceptions.withoutPermissionException;
 import com.futebas.servicousuario.infrastructure.entities.Campo;
 import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
@@ -32,11 +33,97 @@ public class JogoService {
 	@Autowired
 	private JogadorRepository jogadorRepo;
 
+	// jogador
 	public Jogo criarJogo(Jogo jogo, String token) {
 		horarioValido(jogo);
 		String email = jwt.extrairEmailToken(token);
 		Jogador jogador = jogadorRepo.findByEmail(email);
 		jogo.setCriador(jogador);
+		return repo.save(jogo);
+	}
+	
+	public Jogo jogoUpdate(Jogo novo, String token, String idJogo) {
+		verificarPermissao(token, idJogo);
+		Jogo velho = buscarDadosJogo(idJogo);
+		updateData(velho, novo);
+		horarioValido(velho);
+		return repo.save(velho);
+	}
+
+	public Jogo buscarDadosJogo(String idJogo) {
+		return repo.findById(idJogo).orElseThrow(() -> new ObjectNotFoundException("Jogo não encontrado."));
+	}
+
+	// jogador e emp
+	public void CancelarJogo(String idJogo, String token) {
+		verificarPermissao(token, idJogo);
+		buscarDadosJogo(idJogo);
+		repo.delete(buscarDadosJogo(idJogo));
+	}
+
+	// jogador
+	public Jogo abrirInscicaoJogo(String idJogo, String token) {
+		verificarPermissao(token, idJogo);
+		Jogo jogo = buscarDadosJogo(idJogo);
+		jogo.setAbertoParaJogadores(true);
+		return repo.save(jogo);
+	}
+
+	// jogador/automatico
+	public Jogo fecharInscicaoJogo(String idJogo, String token) {
+		verificarPermissao(token, idJogo);
+		Jogo jogo = buscarDadosJogo(idJogo);
+		jogo.setAbertoParaJogadores(false);
+		return repo.save(jogo);
+	}
+
+	// jogador
+	public List<Jogo> jogosAbertos() {
+		List<Jogo> todosOsJogos = repo.findAll();
+		List<Jogo> jogosAbertos = new ArrayList<Jogo>();
+		for (Jogo i : todosOsJogos) {
+			if (i.getAbertoParaJogadores() == true)
+				jogosAbertos.add(i);
+		}
+		return jogosAbertos;
+	}
+
+	// jogador
+	public List<Jogo> jogosAbertosDia(LocalDateTime dataHora) {
+		LocalDate dia = dataHora.toLocalDate();
+		LocalDateTime inicioDoDia = dia.atStartOfDay();
+		LocalDateTime fimDoDia = dia.atTime(LocalTime.MAX);
+		return repo.findByDataHoraBetween(inicioDoDia, fimDoDia);
+	}
+
+	// empresa
+	public List<Jogo> jogosMarcadosPorEmpresa(String token) {
+		String email = jwt.extrairEmailToken(token);
+		Empresario emp = empRepo.findByEmail(email);
+		List<Jogo> todosOsJogos = repo.findAll();
+		List<Jogo> jogosPorEmpresa = new ArrayList<Jogo>();
+		for (Jogo i : todosOsJogos) {
+			for (Campo a : emp.getCampos()) {
+				if (i.getCampo().getId().equals(a.getId()))
+					jogosPorEmpresa.add(i);
+			}
+		}
+		return jogosPorEmpresa;
+	}
+
+	// jogador
+	public Jogo adicionarJogador(Jogador jogador, String idJogo, String token) {
+		verificarPermissao(token, idJogo);
+		Jogo jogo = buscarDadosJogo(idJogo);
+		jogo.getJogadores().add(jogador);
+		return repo.save(jogo);
+	}
+
+	// jogador
+	public Jogo removerJogador(Jogador jogador, String idJogo, String token) {
+		verificarPermissao(token, idJogo);
+		Jogo jogo = buscarDadosJogo(idJogo);
+		jogo.getJogadores().remove(jogador);
 		return repo.save(jogo);
 	}
 
@@ -52,73 +139,21 @@ public class JogoService {
 		}
 	}
 
-	public Jogo buscarDadosJogo(String id) {
-		return repo.findById(id).orElseThrow(() -> new ObjectNotFoundException("Jogo não encontrado."));
-	}
-
-	public void CancelarJogo(String id, String token) {
-		buscarDadosJogo(id);
-		repo.delete(buscarDadosJogo(id));
-	}
-
-	public Jogo abrirJogo(String id, String token) {
-		Jogo jogo = buscarDadosJogo(id);
-		jogo.setAbertoParaJogadores(true);
-		return repo.save(jogo);
-	}
-
-	//
-	public Jogo fecharJogo(String id, String token) {
-		Jogo jogo = buscarDadosJogo(id);
-		jogo.setAbertoParaJogadores(false);
-		return repo.save(jogo);
-	}
-
-	//jogador
-	public List<Jogo> jogosAbertos() {
-		List<Jogo> todosOsJogos = repo.findAll();
-		List<Jogo> jogosAbertos = new ArrayList<Jogo>();
-		for (Jogo i : todosOsJogos) {
-			if (i.getAbertoParaJogadores() == true)
-				jogosAbertos.add(i);
-		}
-		return jogosAbertos;
-	}
-
-	//jogador
-	public List<Jogo> jogosAbertosDia(LocalDateTime dataHora) {
-		LocalDate dia = dataHora.toLocalDate();
-		LocalDateTime inicioDoDia = dia.atStartOfDay();
-		LocalDateTime fimDoDia = dia.atTime(LocalTime.MAX);
-		return repo.findByDataHoraBetween(inicioDoDia, fimDoDia);
-	}
-
-	//empresa
-	public List<Jogo> jogosMarcadosPorEmpresa(String token) {
+	private void verificarPermissao(String token, String idJogo) {
 		String email = jwt.extrairEmailToken(token);
-		Empresario emp = empRepo.findByEmail(email);
-		List<Jogo> todosOsJogos = repo.findAll();
-		List<Jogo> jogosPorEmpresa = new ArrayList<Jogo>();
-		for (Jogo i : todosOsJogos) {
-			for (Campo a : emp.getCampos()) {
-				if (i.getCampo().getId().equals(a.getId()))
-					jogosPorEmpresa.add(i);
-			}
+		String role = jwt.extractRole(token);
+		Jogador jogador = jogadorRepo.findByEmail(email);
+		Jogo jogo = buscarDadosJogo(idJogo);
+		if (!"EMPRESARIO".equals(role)) { 
+			if (jogador == null || !jogo.getCriador().getId().equals(jogador.getId())) 
+				throw new withoutPermissionException("Você não tem permissão para fazer isso.");
 		}
-		return jogosPorEmpresa;
 	}
-
-	//jogador
-	public Jogo adicionarJogador(Jogador jogador, String id) {
-		Jogo jogo = buscarDadosJogo(id);
-		jogo.getJogadores().add(jogador);
-		return repo.save(jogo);
-	}
-
-	//jogador
-	public Jogo removerJogador(Jogador jogador, String id) {
-		Jogo jogo = buscarDadosJogo(id);
-		jogo.getJogadores().remove(jogador);
-		return repo.save(jogo);
+	
+	private Jogo updateData(Jogo antigo, Jogo novo) {
+		antigo.setCriador(novo.getCriador() != null ? novo.getCriador() : antigo.getCriador());
+		antigo.setDataHora(novo.getDataHora() != null ? novo.getDataHora() : antigo.getDataHora());
+		antigo.setNumeroMaximoJogadores(novo.getNumeroMaximoJogadores() != null ? novo.getNumeroMaximoJogadores() : antigo.getNumeroMaximoJogadores());
+		return antigo;
 	}
 }
