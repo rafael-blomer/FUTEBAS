@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.futebas.servicousuario.business.converter.EmpresaConverter;
+import com.futebas.servicousuario.business.converter.Converter;
 import com.futebas.servicousuario.business.dtos.in.EmpresarioUpdateDtoRequest;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.EmpresarioDtoResponse;
@@ -25,7 +25,7 @@ public class EmpresarioService {
 	@Autowired
 	private JwtUtil jwt;
 	@Autowired
-	private EmpresaConverter converter;
+	private Converter converter;
 
 	private Empresario getByEmail(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
@@ -78,5 +78,9 @@ public class EmpresarioService {
 		for (Campo i : list) 
 			listDto.add(converter.paraCampoDto(i, obj.getNome()));
 		return listDto;
+	}
+	
+	public Empresario buscaPorCampoId(String campoId) {
+		return repo.findByCampos_Id(campoId);
 	}
 }

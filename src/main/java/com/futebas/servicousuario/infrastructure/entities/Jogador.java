@@ -2,6 +2,7 @@ package com.futebas.servicousuario.infrastructure.entities;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,10 +20,27 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Jogador extends Usuario implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
 	private String cpf;
 	private Boolean jogaDeGoleiro;
 	private QualidadeEnum qualidade;
 	private LocalDate dataNascimento;
-	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(cpf);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Jogador other = (Jogador) obj;
+		return Objects.equals(cpf, other.cpf);
+	}
+
 }

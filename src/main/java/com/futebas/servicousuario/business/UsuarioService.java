@@ -8,7 +8,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.futebas.servicousuario.business.converter.Converter;
+import com.futebas.servicousuario.business.dtos.in.EmpresarioCadastroDtoRequest;
 import com.futebas.servicousuario.business.dtos.in.LoginDtoRequest;
+import com.futebas.servicousuario.business.dtos.out.EmpresarioDtoResponse;
+import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
 import com.futebas.servicousuario.business.exceptions.DataIntegratyException;
 import com.futebas.servicousuario.infrastructure.entities.Empresario;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
@@ -29,23 +33,26 @@ public class UsuarioService {
 	private JwtUtil jwtUtil;
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	@Autowired
+	private Converter converter;
 
-	public Empresario cadastroEmpresario(Empresario empresario) {
+	public EmpresarioDtoResponse cadastroEmpresario(EmpresarioCadastroDtoRequest empresarioDto) {
+		Empresario empresario = converter.paraEmpresarioEntity(empresarioDto);
 		if (findEmpresaByCnpj(empresario.getCnpj()) != null)
 			throw new DataIntegratyException("CNPJ já cadastrado.");
 		if (findEmpresaByEmail(empresario.getEmail()) != null)
 			throw new DataIntegratyException("Email já cadastrado.");
 		empresario.setSenha(encoder.encode(empresario.getSenha()));
-		return empresarioRepo.save(empresario);
+		return converter.paraEmpresarioDto(empresarioRepo.save(empresario));
 	}
 
-	public Jogador cadastroJogador(Jogador jogador) {
+	public JogadorDtoResponse cadastroJogador(Jogador jogador) {
 		if (findJogadorByCpf(jogador.getCpf()) != null)
 			throw new DataIntegratyException("CPF já cadastrado.");
 		if (findJogadorByEmail(jogador.getEmail()) != null)
 			throw new DataIntegratyException("Email já cadastrado.");
 		jogador.setSenha(encoder.encode(jogador.getSenha()));
-		return jogadorRepo.save(jogador);
+		return converter.paraJogadorDto(jogadorRepo.save(jogador));
 	}
 
 	public String login(LoginDtoRequest dto) {

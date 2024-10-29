@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futebas.servicousuario.business.UsuarioService;
+import com.futebas.servicousuario.business.dtos.in.EmpresarioCadastroDtoRequest;
 import com.futebas.servicousuario.business.dtos.in.LoginDtoRequest;
-import com.futebas.servicousuario.infrastructure.entities.Empresario;
+import com.futebas.servicousuario.business.dtos.out.EmpresarioDtoResponse;
+import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
 import com.futebas.servicousuario.infrastructure.entities.Jogador;
 
 @RestController
@@ -25,14 +27,12 @@ public class UsuarioController {
 	}
 
 	@PostMapping("/jogador")
-	public ResponseEntity<Jogador> cadastroJogador(@RequestBody Jogador jogador) {
-		Jogador obj = usuarioService.cadastroJogador(jogador);
-		return ResponseEntity.ok().body(obj);
+	public ResponseEntity<JogadorDtoResponse> cadastroJogador(@RequestBody Jogador jogador) {
+		return ResponseEntity.ok().body(usuarioService.cadastroJogador(jogador));
 	}
 
 	@PostMapping("/empresa")
-	public ResponseEntity<Empresario> cadastroEmpresa(@RequestBody Empresario empresa) {
-		Empresario obj = usuarioService.cadastroEmpresario(empresa);
-		return ResponseEntity.ok().body(obj);
+	public ResponseEntity<EmpresarioDtoResponse> cadastroEmpresa(@RequestBody EmpresarioCadastroDtoRequest empresarioDto) {
+		return ResponseEntity.ok().body(usuarioService.cadastroEmpresario(empresarioDto));
 	}
 }
