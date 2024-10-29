@@ -21,5 +21,5 @@ public interface EmpresarioRepository extends MongoRepository<Empresario, String
 	@Query("{ 'campos.endereco.cidade': { $regex: ?0, $options: 'i' } }")
 	List<Empresario> findEmpresariosByCidade(String cidade);
 
-
+	Empresario findByCampos_Id(String campoId);
 }

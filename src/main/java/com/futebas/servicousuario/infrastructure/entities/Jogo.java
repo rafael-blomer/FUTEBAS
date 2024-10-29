@@ -1,6 +1,7 @@
 package com.futebas.servicousuario.infrastructure.entities;
 
-import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,11 +20,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Builder
-public class Endereco implements Serializable{
-	private static final long serialVersionUID = 1L;
-	
+public class Jogo {
+
 	@Id
 	private String id;
-	private String cep, uf, cidade, bairro, rua;
-	private Short numero;
+	private Jogador criador;
+	private LocalDateTime dataHora;
+	private List<Jogador> jogadores;
+	private Boolean abertoParaJogadores;
+	private Campo campo;
+	private Integer numeroMaximoJogadores;
 }
