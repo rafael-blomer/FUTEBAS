@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.futebas.servicousuario.business.converter.EmpresaConverter;
-import com.futebas.servicousuario.business.converter.JogadorConverter;
+import com.futebas.servicousuario.business.converter.Converter;
 import com.futebas.servicousuario.business.dtos.in.JogadorUpdateDtoRequest;
 import com.futebas.servicousuario.business.dtos.out.CampoDtoResponse;
 import com.futebas.servicousuario.business.dtos.out.JogadorDtoResponse;
@@ -28,9 +27,7 @@ public class JogadorService {
 	@Autowired
 	private JwtUtil jwt;
 	@Autowired
-	private JogadorConverter converter;
-	@Autowired
-	private EmpresaConverter empConverter;
+	private Converter converter;
 	
 	private Jogador getByEmail(String token) {
 		String email = jwt.extrairEmailToken(token.substring(7));
@@ -68,7 +65,7 @@ public class JogadorService {
 	            .flatMap(empresario -> empresario.getCampos().stream()
 	                .filter(campo -> campo.getEndereco().getBairro().equalsIgnoreCase(bairro))
 	                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade))
-	                .map(campo -> empConverter.paraCampoDto(campo, empresario.getNome()))) 
+	                .map(campo -> converter.paraCampoDto(campo, empresario.getNome()))) 
 	            .collect(Collectors.toList());
 	}
 
@@ -78,7 +75,7 @@ public class JogadorService {
 	    return empresarios.stream()
 	            .flatMap(empresario -> empresario.getCampos().stream()
 	                .filter(campo -> campo.getEndereco().getCidade().equalsIgnoreCase(cidade))
-	                .map(campo -> empConverter.paraCampoDto(campo, empresario.getNome()))) 
+	                .map(campo -> converter.paraCampoDto(campo, empresario.getNome()))) 
 	            .collect(Collectors.toList());
 	}
 

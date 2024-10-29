@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.futebas.servicousuario.business.JogoService;
-import com.futebas.servicousuario.infrastructure.entities.Jogo;
+import com.futebas.servicousuario.business.dtos.in.JogoDtoRequest;
+import com.futebas.servicousuario.business.dtos.out.JogoDtoResponse;
 
 @RestController
 @RequestMapping("/jogos")
@@ -28,20 +29,20 @@ public class JogoController {
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@PostMapping
-	public ResponseEntity<Jogo> criarJogo(@RequestBody Jogo jogo, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<JogoDtoResponse> criarJogo(@RequestBody JogoDtoRequest jogo, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.criarJogo(jogo, token));
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@PutMapping
-	public ResponseEntity<Jogo> atualizarJogo(@RequestBody Jogo jogo, @RequestHeader("Authorization") String token, @RequestParam String id) {
+	public ResponseEntity<JogoDtoResponse> atualizarJogo(@RequestBody JogoDtoRequest jogo, @RequestHeader("Authorization") String token, @RequestParam String id) {
 		return ResponseEntity.ok().body(service.jogoUpdate(jogo, token, id));
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@GetMapping
-	public ResponseEntity<Jogo> buscarDadosJogo(@RequestParam String id) {
-		return ResponseEntity.ok().body(service.buscarDadosJogo(id));
+	public ResponseEntity<JogoDtoResponse> buscarDadosJogo(@RequestParam String id) {
+		return ResponseEntity.ok().body(service.buscarDadosJogoDTO(id));
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
@@ -53,44 +54,50 @@ public class JogoController {
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@PutMapping("/abrir-inscricao")
-	public ResponseEntity<Jogo> abrirInscricaoJogo(@RequestParam String id, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<JogoDtoResponse> abrirInscricaoJogo(@RequestParam String id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.abrirInscricaoJogo(id, token));
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@PutMapping("/fechar-inscricao")
-	public ResponseEntity<Jogo> fecharInscricaoJogo(@RequestParam String id, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<JogoDtoResponse> fecharInscricaoJogo(@RequestParam String id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.fecharInscricaoJogo(id, token));
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@GetMapping("/abertos")
-	public ResponseEntity<List<Jogo>> buscarJogosAbertos() {
+	public ResponseEntity<List<JogoDtoResponse>> buscarJogosAbertos() {
 		return ResponseEntity.ok().body(service.jogosAbertos());
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@GetMapping("/abertos-dia")
-	public ResponseEntity<List<Jogo>> buscarJogosAbertosDia(@RequestParam LocalDate data) {
+	public ResponseEntity<List<JogoDtoResponse>> buscarJogosAbertosDia(@RequestParam LocalDate data) {
 		return ResponseEntity.ok().body(service.jogosAbertosDia(data));
 	}
 	
 	@PreAuthorize("hasRole('EMPRESARIO')")
 	@GetMapping("/empresa")
-	public ResponseEntity<List<Jogo>> buscarJogosAbertosDia(@RequestHeader("Authorization") String token) {
+	public ResponseEntity<List<JogoDtoResponse>> buscarJogosEmpresa(@RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.jogosMarcadosPorEmpresa(token));
 	}
 
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@PostMapping("/adicionar")
-	public ResponseEntity<Jogo> adicionarJogador(@RequestParam String cpfJogador,@RequestParam String id, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<JogoDtoResponse> adicionarJogador(@RequestParam String cpfJogador,@RequestParam String id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.adicionarJogador(cpfJogador, id, token));
 	}
 	
 	@PreAuthorize("hasAnyRole('JOGADOR', 'EMPRESARIO')")
 	@DeleteMapping("/remover")
-	public ResponseEntity<Jogo> removerJogador(@RequestParam String cpfJogador,@RequestParam String id, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<JogoDtoResponse> removerJogador(@RequestParam String cpfJogador,@RequestParam String id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.removerJogador(cpfJogador, id, token));
+	}
+	
+	@PreAuthorize("hasRole('JOGADOR')")
+	@GetMapping("/jogador")
+	public ResponseEntity<List<JogoDtoResponse>> buscarJogosJogador(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(service.jogosMarcadosPorJogador(token));
 	}
 
 }
